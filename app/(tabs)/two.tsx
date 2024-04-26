@@ -49,16 +49,28 @@ export default function App() {
                 quality: 1,
             });
 
-            if (!result.canceled && 'uri' in result) {
-                setImage(result.uri as string); // Folosim operatorul 'as' pentru a converti valoarea la tipul 'string'
-            }
+                setImage(result.assets[0].uri as string); // Actualizăm starea 'image' cu URI-ul imaginii selectate
+
         } catch (error) {
             console.error('Error choosing image:', error);
         }
     };
 
+    const handleDeleteImage = () => {
+        setImage(null);
+    };
+
     return (
       <View style={styles.container}>
+          <Text style={styles.label}>Name</Text>
+          <TextInput
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter name"
+          />
+          <Button title="Choose Image" onPress={handleChooseImage} style={styles.button} />
+          <Button title="Submit" onPress={handleAddPerson} style={styles.button} />
           <FlatList
             data={persons}
             renderItem={({ item }) => (
@@ -68,15 +80,8 @@ export default function App() {
             )}
             keyExtractor={(item, index) => index.toString()}
           />
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter name"
-          />
-          <Button title="Add Person" onPress={handleAddPerson} />
-          <Button title="Choose Image" onPress={handleChooseImage} />
-          {image && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
+          {image && <Image source={{ uri: image }} style={styles.image} />}
+          {image && <Button title="Delete Image" onPress={handleDeleteImage} style={styles.button} />}
       </View>
     );
 }
@@ -95,10 +100,24 @@ const styles = StyleSheet.create({
         backgroundColor: '#eee',
     },
     input: {
+        borderRadius: 10,
         height: 40,
         width: 200,
         borderColor: 'gray',
         borderWidth: 1,
+        marginBottom: 10,
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    button: {
+        marginBottom: 10,
+    },
+    image: {
+        width: 200,
+        height: 200,
         marginBottom: 10,
     },
 });
