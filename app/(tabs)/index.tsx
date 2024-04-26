@@ -1,33 +1,24 @@
-import { Camera, CameraType } from 'expo-camera';
-import { useState } from 'react';
-import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FaceDetectorMode } from 'expo-face-detector';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Camera } from 'expo-camera';
 
 export default function TabTwoScreen() {
-    const [type, setType] = useState(CameraType.back);
-    const [permission, requestPermission] = Camera.useCameraPermissions();
-    const [faces, setFaces] = useState<any[]>([]); // Specificăm tipul datelor pentru faces ca any[]
+    const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+    const [type, setType] = useState(Camera.Constants.Type.back);
+    const [faces, setFaces] = useState<any[]>([]);
 
-    if (!permission) {
-        // Camera permissions are still loading
-        return <View />;
-    }
-
-    if (!permission.granted) {
-        // Camera permissions are not granted yet
-        return (
-            <View style={styles.container}>
-                <Text style={{ textAlign: 'center' }}>We need your permission to show the camera</Text>
-                <Button onPress={requestPermission} title="grant permission" />
-            </View>
-        );
-    }
+    useEffect(() => {
+        (async () => {
+            const { status } = await Camera.requestPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
 
     function toggleCameraType() {
-        setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
+        setType(current => (current === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back));
     }
 
-    const handleFacesDetected = ({ faces }: { faces: any[] }) => { // Specificăm tipul datelor pentru faces ca any[]
+    const handleFacesDetected = ({ faces }: { faces: any[] }) => {
         setFaces(faces);
     };
 
@@ -35,58 +26,62 @@ export default function TabTwoScreen() {
         return faces.map((face, index) => {
             const { bounds } = face;
             return (
-                <View
-                    key={index}
-                    style={{
-                        position: 'absolute',
-                        borderColor: 'red',
-                        borderWidth: 2,
-                        left: bounds.origin.x,
-                        top: bounds.origin.y,
-                        width: bounds.size.width,
-                        height: bounds.size.height,
-                    }}
-                />
+              <View
+                key={index}
+                style={{
+                    position: 'absolute',
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    left: bounds.origin.x,
+                    top: bounds.origin.y,
+                    width: bounds.size.width,
+                    height: bounds.size.height,
+                }}
+              />
             );
         });
     };
 
+    if (hasPermission === null) {
+        return <View />;
+    }
+    if (hasPermission === false) {
+        return <Text>No access to camera</Text>;
+    }
+
     return (
-        <View style={styles.container}>
-            <Camera style={styles.camera} type={type} onFacesDetected={handleFacesDetected} faceDetectorSettings={{ mode: FaceDetectorMode.fast }}>
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
-                        <Text style={styles.text}>Flip Camera</Text>
-                    </TouchableOpacity>
-                </View>
-                {renderFaces()}
-            </Camera>
-        </View>
+      <View style={styles.container}>
+          <Camera style={styles.camera} type={type} onFacesDetected={handleFacesDetected}>
+              <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
+                      <Text style={styles.text}>Flip Camera</Text>
+                  </TouchableOpacity>
+              </View>
+              {renderFaces()}
+          </Camera>
+      </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
     },
     camera: {
         flex: 1,
     },
     buttonContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        backgroundColor: 'transparent',
-        margin: 64,
+        position: 'absolute',
+        top: 20,
+        right: 20,
     },
     button: {
-        flex: 1,
-        alignSelf: 'flex-end',
-        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: 10,
+        borderRadius: 5,
     },
     text: {
-        fontSize: 24,
-        fontWeight: 'bold',
         color: 'white',
+        fontSize: 16,
     },
 });

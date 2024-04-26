@@ -1,18 +1,41 @@
-import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, StyleSheet, Dimensions } from 'react-native';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+const SERVER_URL = 'http://10.3.101.163:8000';
+const { width } = Dimensions.get('window');
 
-export default function ModalScreen() {
+export default function App() {
+  const [persons, setPersons] = useState<any[]>([]);
+  const [name, setName] = useState<string>('');
+
+  useEffect(() => {
+    fetchPersons();
+  }, []);
+
+  const fetchPersons = async () => {
+    try {
+      const response = await fetch(`${SERVER_URL}/get_person_list`);
+      const data = await response.json();
+      setPersons(data.personList);
+      console.log(data);
+    } catch (error) {
+      console.error('Error fetching person list:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Modal</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/modal.tsx" />
-
-      {/* Use a light status bar on iOS to account for the black space above the modal */}
-      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
+      <FlatList
+        data={persons}
+        renderItem={({ item }) => (
+          <View style={styles.itemContainer}>
+            <View style={styles.item}>
+              <Text>{item.name}</Text>
+            </View>
+          </View>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
     </View>
   );
 }
@@ -20,16 +43,30 @@ export default function ModalScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  itemContainer: {
+    width: '90%',
+    height: 15220,
+    marginVertical: 18,
+    marginHorizontal: '87%',
+    marginLeft : '1%',
+    alignItems: 'center',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  item: {
+    width: '100%',
+    padding: 10,
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
