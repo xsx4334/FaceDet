@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, FlatList, TextInput, StyleSheet, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker'; // Import din expo-image-picker
 
-const SERVER_URL = 'http://10.3.101.163:8000';
+const SERVER_URL = 'http://10.3.101.94:8000';
 
 export default function App() {
     const [persons, setPersons] = useState<any[]>([]); // Specificăm tipul any pentru persons

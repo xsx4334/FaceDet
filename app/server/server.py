@@ -1,36 +1,38 @@
-import cv2
-import base64
-import socketio
+from flask import Flask, request, jsonify
+import os
 
-sio = socketio.Server()
-app = socketio.WSGIApp(sio)
+app = Flask(__name__)
 
-class FaceDetector:
-    def __init__(self):
-        self.Trained_data = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-        self.webcam_image = cv2.VideoCapture(0)
+# Simulăm o bază de date pentru persoane
+persons = []
 
-    def detect_faces(self):
-        while True:
-            frame_confirm, frame = self.webcam_image.read()
-            grayscaled_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            face_coordinates = self.Trained_data.detectMultiScale(grayscaled_image)
-            for (x, y, width, height) in face_coordinates:
-                cv2.rectangle(frame, (x, y), (x+width, y+height), (0, 255, 0), 2)
+@app.route('/add_person', methods=['POST'])
+def add_person():
+    data = request.json
+    name = data.get('name')
+    if name:
+        person = {'id': len(persons) + 1, 'name': name}
+        persons.append(person)
+        return jsonify({'message': 'Person added successfully', 'person': person}), 201
+    else:
+        return jsonify({'error': 'Name is required'}), 400
 
-            _, encoded_frame = cv2.imencode('.jpg', frame)
-            encoded_frame = base64.b64encode(encoded_frame)
-            sio.emit('frame', encoded_frame)
+@app.route('/get_person_list', methods=['GET'])
+def get_person_list():
+    return jsonify({'personList': persons})
 
-@sio.on('connect')
-def connect(sid, environ):
-    print('Client connected')
-
-@sio.on('disconnect')
-def disconnect(sid):
-    print('Client disconnected')
+@app.route('/delete_person', methods=['GET'])
+def delete_person():
+    person_id = request.args.get('person_id')
+    if person_id:
+        person_id = int(person_id)
+        for person in persons:
+            if person['id'] == person_id:
+                persons.remove(person)
+                return jsonify({'message': f'Person with ID {person_id} deleted successfully'}), 200
+        return jsonify({'error': 'Person not found'}), 404
+    else:
+        return jsonify({'error': 'Person ID is required in query parameter'}), 400
 
 if __name__ == '__main__':
-    face_detector = FaceDetector()
-    sio.start_background_task(face_detector.detect_faces)
-    eventlet.wsgi.server(eventlet.listen(('0.0.0.0', 8000)), app)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True)
