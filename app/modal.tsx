@@ -43,9 +43,9 @@ export default function App() {
         renderItem={({ item }) => (
           <View style={styles.itemContainer}>
             <View style={styles.item}>
-              <Text>{item.name}</Text>
-              {item.age && <Text>Age: {item.age}</Text>}
-              {item.cause && <Text>Cause: {item.cause}</Text>}
+              <Text style={styles.nameText}>{item.name}</Text>
+              {item.age && <Text style={styles.ageText}>Age: {item.age}</Text>}
+              {item.cause && <Text style={styles.causeText}>Cause: {item.cause}</Text>}
               <View style={styles.buttonContainer}>
                 {/* Butonul de ștergere */}
                 <TouchableOpacity onPress={() => handleDeletePerson(item.id)}>
@@ -73,6 +73,15 @@ const styles = StyleSheet.create({
     width: '90%',
     marginVertical: 18,
     marginHorizontal: '5%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 8,
+      height: 8,
+    },
+    shadowOpacity: 0.37,
+    shadowRadius: 5.65,
+
+    elevation: 6,
   },
   item: {
     width: '100%',
@@ -82,6 +91,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  nameText: {
+    bottom: 10,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  ageText: {
+    marginLeft: -120,
+    top: 15,
+    fontSize: 16,
+    fontStyle: 'italic',
+  },
+  causeText: {
+    fontSize: 14,
+    color: 'gray',
   },
   buttonContainer: {
     flexDirection: 'row',
