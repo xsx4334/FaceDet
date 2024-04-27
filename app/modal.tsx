@@ -15,7 +15,9 @@ export default function App() {
     try {
       const response = await fetch(`${SERVER_URL}/get_person_list`);
       const data = await response.json();
-      setPersons(data.personList);
+      // Verificăm dacă fiecare obiect din lista are o proprietate "name"
+      const filteredPersons = data.personList.filter(person => person.name);
+      setPersons(filteredPersons);
       console.log(data);
     } catch (error) {
       console.error('Error fetching person list:', error);
@@ -42,6 +44,8 @@ export default function App() {
           <View style={styles.itemContainer}>
             <View style={styles.item}>
               <Text>{item.name}</Text>
+              {item.age && <Text>Age: {item.age}</Text>}
+              {item.cause && <Text>Cause: {item.cause}</Text>}
               <View style={styles.buttonContainer}>
                 {/* Butonul de ștergere */}
                 <TouchableOpacity onPress={() => handleDeletePerson(item.id)}>

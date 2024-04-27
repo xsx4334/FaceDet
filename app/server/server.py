@@ -45,8 +45,10 @@ def delete_person():
     person_id = request.args.get('person_id')
     if person_id:
         person_id = int(person_id)
-        if person_id in persons:
-            del persons[person_id]
+        print(persons)
+        # Verificăm dacă ID-ul persoanei există în dicționarul persons
+        if str(person_id) in persons:
+            del persons[str(person_id)]
             save_data()  # Salvăm datele actualizate
             return jsonify({'message': f'Person with ID {person_id} deleted successfully'}), 200
         else:
