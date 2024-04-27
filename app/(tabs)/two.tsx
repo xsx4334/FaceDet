@@ -5,8 +5,10 @@ import * as ImagePicker from 'expo-image-picker'; // Import din expo-image-picke
 const SERVER_URL = 'http://192.168.100.140:8000';
 
 export default function App() {
-    const [persons, setPersons] = useState<any[]>([]); // Specificăm tipul any pentru persons
-    const [name, setName] = useState<string>(''); // Specificăm tipul string pentru name
+    const [persons, setPersons] = useState<any[]>([]);
+    const [name, setName] = useState<string>('');
+    const [age, setAge] = useState<string>('');
+    const [cause, setCause] = useState<string>('');
     const [image, setImage] = useState<string | null>(null);
 
     useEffect(() => {
@@ -30,11 +32,11 @@ export default function App() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ name }),
+                body: JSON.stringify({ name, age, cause }),
             });
             const data = await response.json();
             console.log(data);
-            fetchPersons();
+            fetchPersons(); // Actualizăm lista de persoane după adăugare
         } catch (error) {
             console.error('Error adding person:', error);
         }
@@ -48,8 +50,12 @@ export default function App() {
                 aspect: [4, 3],
                 quality: 1,
             });
-
+            console.log(result.assets[0]);
+            if (result !== null && result.assets.length > 0) {
                 setImage(result.assets[0].uri as string); // Actualizăm starea 'image' cu URI-ul imaginii selectate
+            } else {
+                console.log('No image selected');
+            }
 
         } catch (error) {
             console.error('Error choosing image:', error);
@@ -69,8 +75,22 @@ export default function App() {
             onChangeText={setName}
             placeholder="Enter name"
           />
-          <Button title="Choose Image" onPress={handleChooseImage} style={styles.button} />
-          <Button title="Submit" onPress={handleAddPerson} style={styles.button} />
+          <Text style={styles.label}>Age</Text>
+          <TextInput
+            style={styles.input}
+            value={age}
+            onChangeText={setAge}
+            placeholder="Enter age"
+          />
+          <Text style={styles.label}>Cause</Text>
+          <TextInput
+            style={styles.input}
+            value={cause}
+            onChangeText={setCause}
+            placeholder="Enter cause"
+          />
+          <Button title="Choose Image" onPress={handleChooseImage} />
+          <Button title="Submit" onPress={handleAddPerson} />
           <FlatList
             data={persons}
             renderItem={({ item }) => (
@@ -81,7 +101,7 @@ export default function App() {
             keyExtractor={(item, index) => index.toString()}
           />
           {image && <Image source={{ uri: image }} style={styles.image} />}
-          {image && <Button title="Delete Image" onPress={handleDeleteImage} style={styles.button} />}
+          {image && <Button title="Delete Image" onPress={handleDeleteImage} />}
       </View>
     );
 }

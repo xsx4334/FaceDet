@@ -25,9 +25,11 @@ load_data()
 def add_person():
     data = request.json
     name = data.get('name')
+    age = data.get('age')  # Obținem vârsta din corpul cererii
+    cause = data.get('cause')  # Obținem cauza din corpul cererii
     if name:
         person_id = len(persons) + 1
-        person = {'id': person_id, 'name': name}
+        person = {'id': person_id, 'name': name, 'age': age, 'cause': cause}  # Adăugăm vârsta și cauza în dicționarul persoanei
         persons[person_id] = person
         save_data()  # Salvăm datele actualizate
         return jsonify({'message': 'Person added successfully', 'person': person}), 201
