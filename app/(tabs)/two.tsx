@@ -27,12 +27,30 @@ export default function App() {
 
     const handleAddPerson = async () => {
         try {
+            // Convertim imaginea într-un obiect FormData
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('age', age);
+            formData.append('cause', cause);
+            if (image) {
+                // Obținem calea locală a imaginii și o convertim într-un obiect File
+                const localUri = image;
+                const filename = localUri.split('/').pop() || 'image.jpg';
+                const match = /\.(\w+)$/.exec(filename);
+                const type = match ? `image/${match[1]}` : 'image';
+
+                const imageFile = {
+                    uri: localUri,
+                    name: filename,
+                    type: type,
+                };
+                formData.append('image', imageFile);
+            }
+
+            // Trimitem cererea POST către server, incluzând și imaginea în FormData
             const response = await fetch(`${SERVER_URL}/add_person`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, age, cause }),
+                body: formData,
             });
             const data = await response.json();
             console.log(data);
@@ -91,15 +109,6 @@ export default function App() {
           />
           <Button title="Choose Image" onPress={handleChooseImage} />
           <Button title="Submit" onPress={handleAddPerson} />
-          <FlatList
-            data={persons}
-            renderItem={({ item }) => (
-              <View style={styles.item}>
-                  <Text>{item.name}</Text>
-              </View>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-          />
           {image && <Image source={{ uri: image }} style={styles.image} />}
           {image && <Button title="Delete Image" onPress={handleDeleteImage} />}
       </View>

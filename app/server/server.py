@@ -1,8 +1,16 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os
 import json
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
+# Configurăm folderul pentru încărcarea imaginilor
+UPLOAD_FOLDER = './uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Funcție pentru a salva datele în fișierul JSON
 def save_data():
@@ -23,13 +31,18 @@ load_data()
 
 @app.route('/add_person', methods=['POST'])
 def add_person():
-    data = request.json
+    data = request.form
     name = data.get('name')
     age = data.get('age')  # Obținem vârsta din corpul cererii
     cause = data.get('cause')  # Obținem cauza din corpul cererii
+    image = request.files.get('image')  # Obținem imaginea încărcată
     if name:
         person_id = len(persons) + 1
-        person = {'id': person_id, 'name': name, 'age': age, 'cause': cause}  # Adăugăm vârsta și cauza în dicționarul persoanei
+        # Verificăm dacă a fost încărcată o imagine și o salvăm
+        if image:
+            filename = secure_filename(image.filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        person = {'id': person_id, 'name': name, 'age': age, 'cause': cause, 'image': filename if image else None}  # Adăugăm vârsta, cauza și numele imaginii în dicționarul persoanei
         persons[person_id] = person
         save_data()  # Salvăm datele actualizate
         return jsonify({'message': 'Person added successfully', 'person': person}), 201
@@ -38,6 +51,7 @@ def add_person():
 
 @app.route('/get_person_list', methods=['GET'])
 def get_person_list():
+    load_data()  # Încărcăm datele actuale din fișier înainte de a returna lista de persoane
     return jsonify({'personList': list(persons.values())})
 
 @app.route('/delete_person', methods=['GET'])
@@ -55,6 +69,10 @@ def delete_person():
             return jsonify({'error': 'Person not found'}), 404
     else:
         return jsonify({'error': 'Person ID is required in query parameter'}), 400
+
+@app.route('/uploads/<filename>', methods=['GET'])
+def get_uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True)

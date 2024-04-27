@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal, Image, Button } from 'react-native';
 
 const SERVER_URL = 'http://192.168.100.140:8000';
 
 export default function App() {
   const [persons, setPersons] = useState([]);
-  const [name, setName] = useState('');
+  const [selectedPerson, setSelectedPerson] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     fetchPersons();
@@ -15,10 +16,8 @@ export default function App() {
     try {
       const response = await fetch(`${SERVER_URL}/get_person_list`);
       const data = await response.json();
-      // Verificăm dacă fiecare obiect din lista are o proprietate "name"
       const filteredPersons = data.personList.filter(person => person.name);
       setPersons(filteredPersons);
-      console.log(data);
     } catch (error) {
       console.error('Error fetching person list:', error);
     }
@@ -29,11 +28,20 @@ export default function App() {
       const response = await fetch(`${SERVER_URL}/delete_person?person_id=${personId}`, {
         method: 'GET',
       });
-      // Reîncarcăm lista după ștergere
       fetchPersons();
     } catch (error) {
       console.error('Error deleting person:', error);
     }
+  };
+
+  const handleOpenModal = (person) => {
+    const imageUrl = `${SERVER_URL}/uploads/${person.image}`;
+    setSelectedPerson({ ...person, imageUrl });
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
   };
 
   return (
@@ -41,23 +49,43 @@ export default function App() {
       <FlatList
         data={persons}
         renderItem={({ item }) => (
-          <View style={styles.itemContainer}>
-            <View style={styles.item}>
-              <Text style={styles.nameText}>{item.name}</Text>
-              {item.age && <Text style={styles.ageText}>Age: {item.age}</Text>}
-              {item.cause && <Text style={styles.causeText}>Cause: {item.cause}</Text>}
-              <View style={styles.buttonContainer}>
-                {/* Butonul de ștergere */}
-                <TouchableOpacity onPress={() => handleDeletePerson(item.id)}>
-                  <Text style={styles.deleteButton}>X</Text>
-                </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleOpenModal(item)}>
+            <View style={styles.itemContainer}>
+              <View style={styles.item}>
+                <Text style={styles.nameText}>{item.name}</Text>
+                {item.age && <Text style={styles.ageText}>Age: {item.age}</Text>}
+                {item.cause && <Text style={styles.causeText}>Cause: {item.cause}</Text>}
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity onPress={() => handleDeletePerson(item.id)}>
+                    <Text style={styles.deleteButton}>X</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
         keyExtractor={(item, index) => index.toString()}
         scrollEnabled={false}
       />
+
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={modalVisible}
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalContainer}>
+          {selectedPerson && (
+            <Image
+              source={{ uri: `${SERVER_URL}/uploads/${selectedPerson.image}` }}
+              style={styles.modalImage}
+            />
+          )}
+          <TouchableOpacity onPress={handleCloseModal} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -80,7 +108,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.37,
     shadowRadius: 5.65,
-
     elevation: 6,
   },
   item: {
@@ -114,5 +141,26 @@ const styles = StyleSheet.create({
     color: 'red',
     fontWeight: 'bold',
     fontSize: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 20,
+  },
+  closeButton: {
+    backgroundColor: '#2196F3',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
