@@ -1,7 +1,7 @@
 import React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
+import { Pressable, Image } from 'react-native';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -29,8 +29,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Scan',
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require('../images/scan.png')}
+              style={{ width: 25, height: 25, tintColor: color }} // Ajustați dimensiunea și culoarea după necesitate
+            />
+          ),
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -50,8 +55,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="two"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Config',
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require('../images/config.png')}
+              style={{ width: 25, height: 25, tintColor: color }} // Ajustați dimensiunea și culoarea după necesitate
+            />
+          ),
         }}
       />
     </Tabs>
