@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 
-const SERVER_URL = 'http://10.3.101.94:8000';
+const SERVER_URL = 'http://192.168.100.140:8000';
 
 export default function App() {
   const [persons, setPersons] = useState([]);
