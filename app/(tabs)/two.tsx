@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, FlatList, TextInput, StyleSheet, Image } from 'react-native';
-import * as ImagePicker from 'expo-image-picker'; // Import din expo-image-picker
+import { View, Text, Button, TextInput, StyleSheet, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 
 const SERVER_URL = 'http://192.168.100.140:8000';
 
@@ -27,13 +27,11 @@ export default function App() {
 
     const handleAddPerson = async () => {
         try {
-            // Convertim imaginea într-un obiect FormData
             const formData = new FormData();
             formData.append('name', name);
             formData.append('age', age);
             formData.append('cause', cause);
             if (image) {
-                // Obținem calea locală a imaginii și o convertim într-un obiect File
                 const localUri = image;
                 const filename = localUri.split('/').pop() || 'image.jpg';
                 const match = /\.(\w+)$/.exec(filename);
@@ -47,14 +45,13 @@ export default function App() {
                 formData.append('image', imageFile);
             }
 
-            // Trimitem cererea POST către server, incluzând și imaginea în FormData
             const response = await fetch(`${SERVER_URL}/add_person`, {
                 method: 'POST',
                 body: formData,
             });
             const data = await response.json();
             console.log(data);
-            fetchPersons(); // Actualizăm lista de persoane după adăugare
+            fetchPersons();
         } catch (error) {
             console.error('Error adding person:', error);
         }
@@ -68,12 +65,8 @@ export default function App() {
                 aspect: [4, 3],
                 quality: 1,
             });
-            console.log(result.assets[0]);
-            if (result !== null && result.assets.length > 0) {
-                setImage(result.assets[0].uri as string); // Actualizăm starea 'image' cu URI-ul imaginii selectate
-            } else {
-                console.log('No image selected');
-            }
+
+            setImage(result.assets[0].uri);
 
         } catch (error) {
             console.error('Error choosing image:', error);
@@ -86,31 +79,37 @@ export default function App() {
 
     return (
       <View style={styles.container}>
-          <Text style={styles.label}>Name</Text>
-          <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter name"
-          />
-          <Text style={styles.label}>Age</Text>
-          <TextInput
-            style={styles.input}
-            value={age}
-            onChangeText={setAge}
-            placeholder="Enter age"
-          />
-          <Text style={styles.label}>Cause</Text>
-          <TextInput
-            style={styles.input}
-            value={cause}
-            onChangeText={setCause}
-            placeholder="Enter cause"
-          />
-          <Button title="Choose Image" onPress={handleChooseImage} />
-          <Button title="Submit" onPress={handleAddPerson} />
-          {image && <Image source={{ uri: image }} style={styles.image} />}
-          {image && <Button title="Delete Image" onPress={handleDeleteImage} />}
+          <View style={styles.formContainer}>
+              <Text style={styles.label}>Name</Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="Enter name"
+              />
+              <Text style={styles.label}>Age</Text>
+              <TextInput
+                style={styles.input}
+                value={age}
+                onChangeText={setAge}
+                placeholder="Enter age"
+              />
+              <Text style={styles.label}>Cause</Text>
+              <TextInput
+                style={styles.input}
+                value={cause}
+                onChangeText={setCause}
+                placeholder="Enter cause"
+              />
+          </View>
+          <View style={styles.imageContainer}>
+              {image && <Image source={{ uri: image }} style={styles.image} />}
+              {image && <Button title="Delete Image" onPress={handleDeleteImage} />}
+          </View>
+          <View style={styles.buttonContainer}>
+              <Button title="Choose Image" onPress={handleChooseImage} />
+              <Button title="Submit" onPress={handleAddPerson} />
+          </View>
       </View>
     );
 }
@@ -122,11 +121,22 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    item: {
-        padding: 10,
-        marginVertical: 8,
-        marginHorizontal: 16,
-        backgroundColor: '#eee',
+    formContainer: {
+        position: 'absolute',
+        top: 20,
+        width: '85%',
+        backgroundColor: 'rgba(132,132,132,0.18)',
+        borderRadius: 10,
+        padding: 20,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 8,
+            height: 8,
+        },
+        shadowOpacity: 0.27,
+        shadowRadius: 5.65,
+        alignItems: 'center',
     },
     input: {
         borderRadius: 10,
@@ -141,12 +151,28 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 5,
     },
-    button: {
-        marginBottom: 10,
+    imageContainer: {
+        position: 'absolute',
+        bottom: 80,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 8,
+            height: 8,
+        },
+        shadowOpacity: 0.47,
+        shadowRadius: 5.65,
+        elevation: 6,
     },
     image: {
         width: 200,
         height: 200,
         marginBottom: 10,
+        borderRadius: 10,
+    },
+    buttonContainer: {
+        position: 'absolute',
+        bottom: 20,
+        flexDirection: 'row',
     },
 });
